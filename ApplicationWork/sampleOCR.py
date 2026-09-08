@@ -34,7 +34,6 @@ while cameraFeed.isOpened():
 #Perform cleanup 
 cameraFeed.release()
 cv2.destroyAllWindows()
-Show less
 
 
 
