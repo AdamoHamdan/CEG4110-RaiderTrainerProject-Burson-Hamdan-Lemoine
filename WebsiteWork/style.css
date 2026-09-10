@@ -1,0 +1,58 @@
+/* following styling code blocks were for every page */
+/* for container on every page*/
+.container{
+    background-color: #F2F1F0;
+}
+
+/* following styling code blocks were used for the banner region on every page within the website*/
+.banner{
+    background-color: #F2F1F0;
+    padding: 10px;
+}
+
+.banner h1{
+    margin: 0;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', sans-serif;
+}
+
+.bannerDisplay{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    gap: 20px;
+}
+
+/* following styling code blocks were used for the navigation bar on every page within the website */
+.navBar ul{
+    margin: 0;
+    padding: 20px;
+    background-color: #808080;
+    display: flex;
+    justify-content: center;
+    list-style-type: none;
+    border: 1px solid white;
+}
+
+.navBar ul li a{
+    padding: 20px;
+    text-decoration: none;
+    background-color: #E7E3C6;
+    color: white;
+    font-weight: bold;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    border: 1px solid white;
+}
+
+.navBar ul li a:hover{
+    background-color: #E7E3C6;
+}
+
+/* following styling code block is for the footer section area of every page*/
+.footer{
+    text-align: center;
+    padding: 10px;
+    background-color: #E7E3C6;
+    color: white;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
