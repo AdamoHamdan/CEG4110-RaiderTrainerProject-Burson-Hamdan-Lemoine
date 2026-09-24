@@ -57,4 +57,69 @@
     background-color: #CEA052;
     color: #E7E3C6;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    border: 1px solid white;
+}
+
+/* following styling code blocks were used for the contacts page */
+.mainAreaContacts{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.contactBlock{
+    display: flex;
+    justify-content: space-between;
+    background-color: #CEA052;
+    border: 2px solid white;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.contactLeft{
+    width: 60%;
+    color: white;
+}
+
+.contactLeft h2 h3{
+    margin-bottom: 15px;
+    color: white;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.contactLeft p{
+    margin-bottom: 15px;
+    color: white;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.contactRight{
+    width: 35%;
+    text-align: center;
+}
+
+.contactTable{
+    align-content: center;
+    padding-left:5%;
+}
+
+.contactTable tr th{
+    background-color: #026937;
+    align-content: center;
+    border: 1px solid white;
+    padding: 10px;
+}
+
+.contactTable tr td{
+    background-color: #808080;
+    text-align: center;
+    border: 1px solid white;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.imgCaption{
+    margin-top: 10px;
+    color: white;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: bold;
 }
