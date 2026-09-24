@@ -1,4 +1,5 @@
 import tkinter as tk
+from account import Account, saveAccounts, loadAccounts, Workout
 from tkinter import messagebox
 
 # section that will contain the entire interface for the trainer application
@@ -11,8 +12,11 @@ class RaiderTrainer(tk.Tk):
         self.geometry("1000x850")
         self.resizable(False, False)
 
-        # tracks current user (currently a placeholder)
-        self.current_user = "testingtesting"
+        # tracks current user
+        self.current_user = None
+
+        # account list
+        self.accounts = loadAccounts()
 
         # placeholder set of user information for workouts
         self.exercise = ""
@@ -20,6 +24,7 @@ class RaiderTrainer(tk.Tk):
         self.reps = 10
         self.rest = 30
         self.sets = 3
+        self.accuracy = "95%"
 
         # sets up the main container for GUI
         self.container = tk.Frame(self)
@@ -29,7 +34,7 @@ class RaiderTrainer(tk.Tk):
         self.frames = {}
 
         # sets up each different page in the interface
-        for page in (LoginPage, UserMenu, ExerciseSelection, WorkoutSetup, WorkoutPage, WorkoutSummary, WorkoutHistory, AdminMenu):
+        for page in (LoginPage, AccountCreation, UserMenu, ExerciseSelection, WorkoutSetup, WorkoutPage, WorkoutSummary, WorkoutHistory, AdminMenu):
             # assign each page on application its own frame
             frame = page(self.container, self)
             self.frames[page] = frame
@@ -70,22 +75,143 @@ class LoginPage(tk.Frame):
         loginButton = tk.Button(self, text="Login", font=("Arial", 14), width=20, command=self.login)
         loginButton.pack(pady=20)
 
+        # sets up button to create new account
+        createButton = tk.Button(self, text="Create Account", font=("Arial", 14), width=20, command=lambda: self.controller.show_frame(AccountCreation))
+        createButton.pack(pady=20)
+
     # method set up to actually login a user
     def login(self):
         # takes in username and password
         username = self.usernameInput.get()
         password = self.passwordInput.get()
 
-        # placeholder code for admin and user login logic [WILL BE REPLACED LATER]
+        # Locates the account with the given username
+        usernameFound = False
+        for account in self.controller.accounts:
+            if account.username == username:
+                usernameFound = True
+                break
+
+        incorrectPasswordCount = 0
+
+        #Admin login, will be replaced later
         if username == "Admin":
             self.controller.show_frame(AdminMenu)
 
+        #user login
         elif username != "":
-            self.controller.current_user = username
-            self.controller.show_frame(UserMenu)
 
+            if usernameFound == True:
+
+                if password != "":
+
+                    # Prevents login if account is locked
+                    if account.locked == True:
+                            messagebox.showerror("Login Error", 
+                                                "Account Locked")
+
+                    # logs user in if password is correct
+                    elif password == account.password:
+                        account.failedAttempts = 0
+                        self.controller.current_user = username
+                        self.controller.show_frame(UserMenu)
+
+                    # locks account after 3 failed login attempts
+                    else:
+                        account.failedAttempts += 1
+                        if account.failedAttempts >= 3:
+                            account.locked = True
+                            saveAccounts(self.controller.accounts)
+                            messagebox.showerror("Login Error", 
+                                                "3 Failed login attempts, account is now locked")
+                        else:
+                            messagebox.showerror("Login Error", 
+                                                "Password Incorrect")
+                else:
+                    messagebox.showerror("Login Error", 
+                                        "Please enter a password")                    
+            else:
+                messagebox.showerror("Login Error", 
+                                    "Account not Found")              
         else:
-            messagebox.showerror("Login Error", "Please enter a username.")
+            messagebox.showerror("Login Error", 
+                                 "Please enter a username.")
+
+# page of the application that displays account creation
+class AccountCreation(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        # creates the main title of the login page 
+        title = tk.Label(self, text="RaiderTrainer", font=("Impact", 32, "bold"), fg="green")
+        title.pack(pady=(100, 10))
+        # creates subtitle below main title
+        subtitle = tk.Label(self, text="Strength Training/Exercise Assistant", font=("Arial", 16), fg="gold")
+        subtitle.pack(pady=(0, 40))
+
+        # sets up username creation prompt
+        tk.Label(self, text="Create a username: ", font=("Arial", 14)).pack()
+        self.usernameInput = tk.Entry(self, font=("Arial", 14), width=25)
+        self.usernameInput.pack(pady=10)
+
+        # sets up password creation prompt
+        tk.Label(self,text="Create a password: ", font=("Arial", 14)).pack()
+        self.passwordInput = tk.Entry(self, font=("Arial", 14), width=25, show="*")
+        self.passwordInput.pack(pady=10)
+
+        # sets up button to create account
+        createButton = tk.Button(self, text="Create Account", font=("Arial", 14), width=20, command=self.createAccount)
+        createButton.pack(pady=20)
+
+        # sets up button to go back to login page
+        backButton = tk.Button(self, text="Back to Login", font=("Arial", 14), width=20, command=lambda: self.controller.show_frame(LoginPage))
+        backButton.pack(pady=20)
+
+    # method to create new account
+    def createAccount(self):
+        # takes in username and password
+        username = self.usernameInput.get()
+        password = self.passwordInput.get()
+
+        #checks if username is already in use
+        usernameTaken = False
+        for account in self.controller.accounts:
+            if account.username == username:
+                usernameTaken = True
+
+        if usernameTaken == True:
+            messagebox.showerror("Account Creation Error", 
+                                 "Username is taken.")
+
+        # checks if username consists of 8 lowercase characters
+        elif (len(username) == 8 
+              and username.isalpha() 
+              and username.islower()):
+
+            # checks if password is 12 characters, including 1 uppercase and 1 lowercase letter, 1 number, and 1 special character
+            if (len(password) == 12 
+                and any(c.isupper() for c in password) 
+                and any(c.islower() for c in password)
+                and any(c.isdigit() for c in password)
+                and any(not c.isalnum() for c in password)):
+
+                # Creates new account and logs the user in
+                self.controller.current_user = username
+                newAccount = Account(username, password)
+                self.controller.accounts.append(newAccount)
+                saveAccounts(self.controller.accounts)
+                self.controller.show_frame(UserMenu)
+
+            else:
+                messagebox.showerror("Account Creation Error",
+                                     "Password must be exactly 12 characters and contain "
+                                     "at least 1 uppercase letter, 1 lowercase letter, "
+                                     "1 number, and 1 special character.")
+                
+        else:
+            messagebox.showerror("Account Creation Error", 
+                                 "Username must be exactly 8 lowercase letters.")
 
 # page of the application that is the regular user menu for the raider trainer
 class UserMenu(tk.Frame):
@@ -269,11 +395,29 @@ class WorkoutSummary(tk.Frame):
         # button to return to the users workout history
         tk.Button(self, text="View History", font=("Arial", 14), width=25,command=lambda: controller.show_frame(WorkoutHistory)).pack(pady=15)
 
-    # method that lists all the exercise workout summary in the given order
+    # method that lists all the exercise workout summary in the given order as well as saves the workout
     def tkraise(self, *args, **kwargs):
+       # Create the completed workout
+        newWorkout = Workout(
+            self.controller.exercise,
+            self.controller.weight,
+            self.controller.sets,
+            self.controller.reps,
+            self.controller.rest,
+            self.controller.accuracy,
+            "2026-09-23"
+        )
+
+        # Add workout to current user's history
+        for account in self.controller.accounts:
+            if account.username == self.controller.current_user:
+                account.workoutHistory.append(newWorkout)
+                saveAccounts(self.controller.accounts)
+                break
+ 
         self.summaryLabel.config(text= "Exercise: " + self.controller.exercise + "\nWeight: " + self.controller.weight 
         + "\nSets: " + str(self.controller.sets) + "\nReps: " +
-        str(self.controller.reps) + " seconds" + "\nRest Intervals: " + str(self.controller.rest) + "\nAccuracy: 95%")
+        str(self.controller.reps) + " seconds" + "\nRest Intervals: " + str(self.controller.rest) + "\nAccuracy: " + self.controller.accuracy)
         super().tkraise(*args, **kwargs)
 
 # page of the website that tracks and lists the workout history of a user
@@ -285,15 +429,37 @@ class WorkoutHistory(tk.Frame):
         # title label for the history page/list
         tk.Label(self, text="Workout History", font=("Impact", 28, "bold"), fg="green").pack(pady=40)
 
-        # temporary placeholder list to display how a users workout history would look
-        historyList = ("Monday\n" "Bicep Curl - Weight: 10 lbs | Sets: 3 | Reps: 10 | Accuracy: 91%\n\n"
-            "Wednesday\n" "Lateral Raise - Weight: 5 lbs | Sets: 4 | Reps: 12 | Accuracy: 92%\n\n"
-            "Friday\n" "Bicep Curl - Weight: 15 lbs | Sets: 2 | Reps: 8 | Accuracy: 93%")
+        # label that lists all the content of a users workout history      
+        self.historyLabel = tk.Label(self, text="", font=("Arial", 14), fg="gold", justify="left")
+        self.historyLabel.pack(pady=20)
 
-        # label that lists all the content of a users workout history
-        tk.Label(self, text=historyList, font=("Arial", 14), fg="gold", justify="left").pack(pady=20)
         # button to return to the user home back
         tk.Button(self,text="Return", font=("Arial", 14), width=20, command=lambda: controller.show_frame(UserMenu)).pack(pady=30)
+
+    #method that lists the current users workout history
+    def tkraise(self, *args, **kwargs):
+
+        historyList = ""
+
+        for account in self.controller.accounts:
+
+            if account.username == self.controller.current_user:
+
+                #Displays Workout History
+                for workout in account.workoutHistory:
+                    historyList += (
+                        workout.date + "\n" +
+                        workout.exercise +
+                        " - Weight: " + workout.weight +
+                        " lbs | Sets: " + str(workout.sets) +
+                        " | Reps: " + str(workout.reps) +
+                        " | Accuracy: " + str(workout.accuracy) +
+                        "%\n\n"
+                    )
+
+        self.historyLabel.config(text=historyList)
+
+        super().tkraise(*args, **kwargs)
 
 # page of the application that holds the admin menu
 class AdminMenu(tk.Frame):
