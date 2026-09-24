@@ -92,14 +92,8 @@ class LoginPage(tk.Frame):
                 usernameFound = True
                 break
 
-        incorrectPasswordCount = 0
-
-        #Admin login, will be replaced later
-        if username == "Admin":
-            self.controller.show_frame(AdminMenu)
-
         #user login
-        elif username != "":
+        if username != "":
 
             if usernameFound == True:
 
@@ -114,7 +108,11 @@ class LoginPage(tk.Frame):
                     elif password == account.password:
                         account.failedAttempts = 0
                         self.controller.current_user = username
-                        self.controller.show_frame(UserMenu)
+
+                        if account.admin == True:
+                            self.controller.show_frame(AdminMenu)
+                        else:
+                            self.controller.show_frame(UserMenu)
 
                     # locks account after 3 failed login attempts
                     else:
@@ -160,6 +158,10 @@ class AccountCreation(tk.Frame):
         self.passwordInput = tk.Entry(self, font=("Arial", 14), width=25, show="*")
         self.passwordInput.pack(pady=10)
 
+        tk.Label(self,text="Create Admin Account: (Y/N): ", font=("Arial", 14)).pack()
+        self.adminInput = tk.Entry(self, font=("Arial", 14), width=3)
+        self.adminInput.pack(pady=10)
+
         # sets up button to create account
         createButton = tk.Button(self, text="Create Account", font=("Arial", 14), width=20, command=self.createAccount)
         createButton.pack(pady=20)
@@ -173,6 +175,7 @@ class AccountCreation(tk.Frame):
         # takes in username and password
         username = self.usernameInput.get()
         password = self.passwordInput.get()
+        admin = self.adminInput.get()
 
         #checks if username is already in use
         usernameTaken = False
@@ -196,12 +199,20 @@ class AccountCreation(tk.Frame):
                 and any(c.isdigit() for c in password)
                 and any(not c.isalnum() for c in password)):
 
-                # Creates new account and logs the user in
-                self.controller.current_user = username
-                newAccount = Account(username, password)
-                self.controller.accounts.append(newAccount)
-                saveAccounts(self.controller.accounts)
-                self.controller.show_frame(UserMenu)
+                if admin == "Y":
+                    #creates a new admin account and logs the user in
+                    self.controller.current_user = username
+                    newAccount = Account(username, password, True)
+                    self.controller.accounts.append(newAccount)
+                    saveAccounts(self.controller.accounts)
+                    self.controller.show_frame(AdminMenu)
+                else:
+                    # Creates new account and logs the user in
+                    self.controller.current_user = username
+                    newAccount = Account(username, password)
+                    self.controller.accounts.append(newAccount)
+                    saveAccounts(self.controller.accounts)
+                    self.controller.show_frame(UserMenu)
 
             else:
                 messagebox.showerror("Account Creation Error",
@@ -473,11 +484,13 @@ class AdminMenu(tk.Frame):
         tk.Label(self, text="User Accounts", font=("Arial", 18, "bold"), fg="gold").pack(pady=10)
 
         # placeholder list of usernames that the admin will have access to
-        users = ["AdamHamdan       LOCKED", "WilliamBurson      ACTIVE", "GavinLemoine       ACTIVE"]
+        #users = ["AdamHamdan       LOCKED", "WilliamBurson      ACTIVE", "GavinLemoine       ACTIVE"]
 
         # displays the user list onto the screen
-        for user in users:
-            tk.Label(self, text=user, font=("Courier", 14)).pack(pady=5)
+        #for user in users:
+        #    tk.Label(self, text=user, font=("Courier", 14)).pack(pady=5)
+        self.users = tk.Label(self, text="", font=("Arial", 14), fg="gold", justify="left")
+        self.users.pack(pady=20)
 
         # placeholder button to represent the action of an admin fixing a user account
         tk.Button(self, text="Unlock Account", font=("Arial", 14), width=25, command=self.unlockAccount).pack(pady=20)
@@ -486,8 +499,26 @@ class AdminMenu(tk.Frame):
 
     # method to represent the action of a users account being unlocked
     def unlockAccount(self):
-        messagebox.showinfo("Account Unlocked", "Account has been unlocked.\n\n" "New Password: temporaryTesting123!")
+        for account in self.controller.accounts:
+            if account.locked == True:
+                account.locked = False
+                account.failedAttempts = 0
+                saveAccounts(self.controller.accounts)
+        messagebox.showinfo("Account Unlocked", "Account has been unlocked.\n\n")
+    #method that lists the current users and thier account status
+    def tkraise(self, *args, **kwargs):
 
+        users = ""
+
+        for account in self.controller.accounts:
+            if account.locked == True:
+                users += (account.username + "       LOCKED\n")
+            else:
+                users += (account.username + "       ACTIVE\n")
+
+        self.users.config(text=users)
+
+        super().tkraise(*args, **kwargs)
 # main function of code to run the GUI
 if __name__ == "__main__":
     app = RaiderTrainer()

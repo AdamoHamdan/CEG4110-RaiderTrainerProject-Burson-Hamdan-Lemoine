@@ -23,6 +23,15 @@
                 "rest": 30,
                 "accuracy": "95%",
                 "date": "2026-09-23"
+            },
+            {
+                "exercise": "Lateral Raise",
+                "weight": "5 lbs",
+                "sets": 3,
+                "reps": 10,
+                "rest": 30,
+                "accuracy": "95%",
+                "date": "2026-09-23"
             }
         ]
     },
@@ -30,8 +39,8 @@
         "username": "testuser",
         "password": "Testtest11!!",
         "admin": false,
-        "locked": true,
-        "failed attempts": 3,
+        "locked": false,
+        "failed attempts": 0,
         "workoutHistory": [
             {
                 "exercise": "Lateral Raise",
@@ -43,5 +52,21 @@
                 "date": "2026-09-23"
             }
         ]
+    },
+    {
+        "username": "adminone",
+        "password": "Testtest11!!",
+        "admin": true,
+        "locked": false,
+        "failed attempts": 0,
+        "workoutHistory": []
+    },
+    {
+        "username": "usertest",
+        "password": "Testtest11!!",
+        "admin": false,
+        "locked": false,
+        "failed attempts": 0,
+        "workoutHistory": []
     }
 ]
